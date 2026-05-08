@@ -5,7 +5,7 @@ export class Migration20260504022823 extends Migration {
     this.addSql(`set names 'utf8';`);
 
     this.addSql(
-      `create table "users" ("id" uuid not null, "school_id" uuid not null, "branch_id" uuid not null, "email" varchar(160) not null, "phone" varchar(40) null, "password_hash" varchar(255) not null, "user_type" varchar(30) not null, "is_email_verified" boolean not null default false, "is_phone_verified" boolean not null default false, "is_active" boolean not null default true, "last_login_at" timestamptz null, "created_at" timestamptz not null, "updated_at" timestamptz not null, "deleted_at" timestamptz null, primary key ("id"));`,
+      `create table "users" ("id" uuid not null, "school_id" uuid null, "branch_id" uuid null, "email" varchar(160) not null, "phone" varchar(40) null, "password_hash" varchar(255) not null, "user_type" varchar(30) not null, "is_email_verified" boolean not null default false, "is_phone_verified" boolean not null default false, "is_active" boolean not null default true, "last_login_at" timestamptz null, "created_at" timestamptz not null, "updated_at" timestamptz not null, "deleted_at" timestamptz null, primary key ("id"));`,
     );
     this.addSql(
       `create index "users_school_id_index" on "users" ("school_id");`,
