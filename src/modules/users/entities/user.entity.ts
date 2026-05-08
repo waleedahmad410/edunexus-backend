@@ -30,12 +30,12 @@ export class User {
   id: string = uuid();
 
   @Index()
-  @ManyToOne(() => School, { fieldName: 'school_id' })
-  school!: Rel<School>;
+  @ManyToOne(() => School, { fieldName: 'school_id', nullable: true })
+  school?: Rel<School>;
 
   @Index()
-  @ManyToOne(() => Branch, { fieldName: 'branch_id' })
-  branch!: Rel<Branch>;
+  @ManyToOne(() => Branch, { fieldName: 'branch_id', nullable: true })
+  branch?: Rel<Branch>;
 
   @Index()
   @Property({ type: 'string', length: 160 })
