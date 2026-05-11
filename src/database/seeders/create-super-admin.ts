@@ -1,5 +1,3 @@
-// src/database/seeders/create-super-admin.ts
-
 import 'dotenv/config';
 
 import { NestFactory } from '@nestjs/core';
@@ -7,59 +5,26 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { randomUUID } from 'node:crypto';
 
 import { AppModule } from '../../app.module';
-import { hashPassword } from '../../common/security/password.util';
+import { PasswordService } from '../../modules/auth/password.service';
 
-type ExistingUserRow = {
-  id: string;
-  email: string;
-  user_type: string;
-};
+// Adjust these imports to your real entity paths
+import { User } from '../../modules/users/entities/user.entity';
+import { SuperAdminProfile } from '../../modules/super-admin/entities/super-admin-profile.entity';
 
-type ExistingProfileRow = {
-  id: string;
-};
-
-function isTruthy(value: string | undefined): boolean {
-  return ['1', 'true', 'yes', 'on'].includes(value?.toLowerCase() ?? '');
-}
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]?.trim();
-
-  if (!value) {
-    throw new Error(`${name} is required.`);
-  }
-
-  return value;
-}
-
-async function bootstrap(): Promise<void> {
-  const email = requiredEnv('SUPER_ADMIN_EMAIL').toLowerCase();
-
+async function bootstrap() {
+  const email = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.SUPER_ADMIN_PASSWORD;
-  const passwordHash =
-    process.env.SUPER_ADMIN_PASSWORD_HASH ??
-    (password ? hashPassword(password) : undefined);
+  const phone = process.env.SUPER_ADMIN_PHONE;
 
-  const resetPassword = isTruthy(process.env.SUPER_ADMIN_RESET_PASSWORD);
+  const firstName = process.env.SUPER_ADMIN_FIRST_NAME ?? 'Super';
+  const lastName = process.env.SUPER_ADMIN_LAST_NAME ?? 'Admin';
 
-  const firstName = process.env.SUPER_ADMIN_FIRST_NAME?.trim() || 'Super';
-  const lastName = process.env.SUPER_ADMIN_LAST_NAME?.trim() || 'Admin';
-
-  if (!passwordHash) {
-    throw new Error(
-      'Either SUPER_ADMIN_PASSWORD or SUPER_ADMIN_PASSWORD_HASH is required.',
-    );
+  if (!email) {
+    throw new Error('SUPER_ADMIN_EMAIL is required.');
   }
 
-  if (
-    !process.env.SUPER_ADMIN_PASSWORD_HASH &&
-    password &&
-    password.length < 12
-  ) {
-    throw new Error(
-      'SUPER_ADMIN_PASSWORD must be at least 12 characters long.',
-    );
+  if (!password) {
+    throw new Error('SUPER_ADMIN_PASSWORD is required.');
   }
 
   const app = await NestFactory.createApplicationContext(AppModule, {
@@ -68,167 +33,85 @@ async function bootstrap(): Promise<void> {
 
   try {
     const em = app.get(EntityManager).fork();
+    const passwordService = app.get(PasswordService, { strict: false });
+
+    const passwordHash = await passwordService.hashPassword(password);
 
     await em.transactional(async (tx) => {
-      const existingUsers = await tx.execute<ExistingUserRow[]>(
-        `
-          select "id", "email", "user_type"
-          from "users"
-          where lower("email") = lower(?)
-          limit 1
-          for update;
-        `,
-        [email],
-      );
+      const userRepository = tx.getRepository(User);
+      const superAdminProfileRepository = tx.getRepository(SuperAdminProfile);
 
-      let userId: string;
+      let user = await userRepository.findOne({
+        email,
+        deletedAt: null,
+      });
 
-      if (existingUsers.length > 0) {
-        const existingUser = existingUsers[0];
+      if (user) {
+        user.passwordHash = passwordHash;
+        user.status = 'ACTIVE';
+        user.updatedAt = new Date();
 
-        if (existingUser.user_type !== 'SUPER_ADMIN') {
-          throw new Error(
-            `User with email ${email} already exists but is not a SUPER_ADMIN.`,
-          );
+        if (phone) {
+          user.phone = phone;
         }
 
-        userId = existingUser.id;
-
-        if (resetPassword) {
-          await tx.execute(
-            `
-              update "users"
-              set
-                "password_hash" = ?,
-                "is_email_verified" = true,
-                "is_active" = true,
-                "updated_at" = now()
-              where "id" = ?;
-            `,
-            [passwordHash, userId],
-          );
-
-          console.log(`Updated existing super admin password: ${email}`);
-        } else {
-          await tx.execute(
-            `
-              update "users"
-              set
-                "is_email_verified" = true,
-                "is_active" = true,
-                "updated_at" = now()
-              where "id" = ?;
-            `,
-            [userId],
-          );
-
-          console.log(
-            `Super admin already exists; password unchanged: ${email}`,
-          );
-        }
+        console.log(`Updated existing user: ${email}`);
       } else {
-        userId = randomUUID();
+        user = tx.create(User, {
+          id: randomUUID(),
+          email,
+          phone,
+          passwordHash,
+          status: 'ACTIVE',
+          lastLoginAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: null,
+        });
 
-        await tx.execute(
-          `
-            insert into "users" (
-              "id",
-              "school_id",
-              "branch_id",
-              "email",
-              "phone",
-              "password_hash",
-              "user_type",
-              "is_email_verified",
-              "is_phone_verified",
-              "is_active",
-              "last_login_at",
-              "created_at",
-              "updated_at",
-              "deleted_at"
-            )
-            values (
-              ?,
-              null,
-              null,
-              ?,
-              null,
-              ?,
-              'SUPER_ADMIN',
-              true,
-              false,
-              true,
-              null,
-              now(),
-              now(),
-              null
-            );
-          `,
-          [userId, email, passwordHash],
-        );
+        tx.persist(user);
 
-        console.log(`Created super admin: ${email}`);
+        console.log(`Created user: ${email}`);
       }
 
-      const existingProfiles = await tx.execute<ExistingProfileRow[]>(
-        `
-          select "id"
-          from "user_profiles"
-          where "user_id" = ?
-          limit 1
-          for update;
-        `,
-        [userId],
-      );
+      let superAdminProfile = await superAdminProfileRepository.findOne({
+        user,
+        deletedAt: null,
+      });
 
-      if (existingProfiles.length === 0) {
-        await tx.execute(
-          `
-            insert into "user_profiles" (
-              "id",
-              "user_id",
-              "first_name",
-              "middle_name",
-              "last_name",
-              "gender",
-              "date_of_birth",
-              "photo_url",
-              "national_id",
-              "address",
-              "city",
-              "state",
-              "country",
-              "postal_code",
-              "created_at",
-              "updated_at"
-            )
-            values (
-              ?,
-              ?,
-              ?,
-              null,
-              ?,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              now(),
-              now()
-            );
-          `,
-          [randomUUID(), userId, firstName, lastName],
-        );
+      if (superAdminProfile) {
+        superAdminProfile.firstName = firstName;
+        superAdminProfile.lastName = lastName;
+        superAdminProfile.phone = phone;
+        superAdminProfile.accessLevel = 'FULL';
+        superAdminProfile.status = 'ACTIVE';
+        superAdminProfile.updatedAt = new Date();
 
-        console.log(`Created profile for super admin: ${email}`);
+        console.log(`Updated super admin profile: ${email}`);
       } else {
-        console.log(`Profile already exists for super admin: ${email}`);
+        superAdminProfile = tx.create(SuperAdminProfile, {
+          id: randomUUID(),
+          user,
+          firstName,
+          lastName,
+          phone,
+          photoUrl: null,
+          accessLevel: 'FULL',
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: null,
+        });
+
+        tx.persist(superAdminProfile);
+
+        console.log(`Created super admin profile: ${email}`);
       }
+
+      await tx.flush();
     });
+
+    console.log('Super admin setup completed successfully.');
   } finally {
     await app.close();
   }

@@ -17,7 +17,6 @@ import { User } from '../../users/entities/user.entity';
 export class SuperAdminProfile {
   [OptionalProps]?:
     | 'id'
-    | 'middleName'
     | 'phone'
     | 'photoUrl'
     | 'createdAt'
@@ -33,9 +32,6 @@ export class SuperAdminProfile {
 
   @Property({ type: 'string', length: 100 })
   firstName!: string;
-
-  @Property({ type: 'string', length: 100, nullable: true })
-  middleName?: string;
 
   @Property({ type: 'string', length: 100 })
   lastName!: string;

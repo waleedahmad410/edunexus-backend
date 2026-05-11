@@ -13,12 +13,7 @@ import { User } from '../../users/entities/user.entity';
 
 @Entity({ tableName: 'password_reset_tokens' })
 export class PasswordResetToken {
-  [OptionalProps]?:
-    | 'id'
-    | 'ipAddress'
-    | 'usedAt'
-    | 'createdAt'
-    | 'updatedAt';
+  [OptionalProps]?: 'id' | 'ipAddress' | 'usedAt' | 'createdAt' | 'updatedAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
