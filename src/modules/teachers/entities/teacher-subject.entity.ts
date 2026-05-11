@@ -1,5 +1,3 @@
-// src/modules/teachers/entities/teacher-subject.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,27 +6,27 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
 import { AcademicYear } from '../../academic-years/entities/academic-year.entity';
 import { Branch } from '../../branches/entities/branch.entity';
-import { SchoolClass } from '../../classes/entities/school-class.entity';
+import { SchoolClass } from '../../classes/entities/class.entity';
 import { School } from '../../schools/entities/school.entity';
 import { Section } from '../../sections/entities/section.entity';
 import { Subject } from '../../subjects/entities/subject.entity';
-import { Teacher } from './teacher.entity';
+import { Teacher } from '../../teachers/entities/teacher.entity';
 
 @Entity({ tableName: 'teacher_subjects' })
+@Unique({
+  properties: ['academicYear', 'teacher', 'subject', 'schoolClass', 'section'],
+})
 export class TeacherSubject {
-  [OptionalProps]?: 'id' | 'createdAt' | 'updatedAt';
+  [OptionalProps]?: 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
-
-  @Index()
-  @ManyToOne(() => Teacher, { fieldName: 'teacher_id' })
-  teacher!: Rel<Teacher>;
 
   @Index()
   @ManyToOne(() => School, { fieldName: 'school_id' })
@@ -43,6 +41,14 @@ export class TeacherSubject {
   academicYear!: Rel<AcademicYear>;
 
   @Index()
+  @ManyToOne(() => Teacher, { fieldName: 'teacher_id' })
+  teacher!: Rel<Teacher>;
+
+  @Index()
+  @ManyToOne(() => Subject, { fieldName: 'subject_id' })
+  subject!: Rel<Subject>;
+
+  @Index()
   @ManyToOne(() => SchoolClass, { fieldName: 'class_id' })
   schoolClass!: Rel<SchoolClass>;
 
@@ -51,8 +57,8 @@ export class TeacherSubject {
   section!: Rel<Section>;
 
   @Index()
-  @ManyToOne(() => Subject, { fieldName: 'subject_id' })
-  subject!: Rel<Subject>;
+  @Property({ type: 'string', length: 30 })
+  status!: string;
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();
@@ -63,4 +69,7 @@ export class TeacherSubject {
     onUpdate: () => new Date(),
   })
   updatedAt = new Date();
+
+  @Property({ type: 'Date', nullable: true })
+  deletedAt?: Date;
 }

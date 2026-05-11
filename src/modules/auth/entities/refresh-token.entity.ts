@@ -6,17 +6,20 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
 import { User } from '../../users/entities/user.entity';
 
-@Entity({ tableName: 'password_reset_tokens' })
-export class PasswordResetToken {
+@Entity({ tableName: 'refresh_tokens' })
+@Unique({ properties: ['tokenHash'] })
+export class RefreshToken {
   [OptionalProps]?:
     | 'id'
+    | 'revokedAt'
     | 'ipAddress'
-    | 'usedAt'
+    | 'userAgent'
     | 'createdAt'
     | 'updatedAt';
 
@@ -36,14 +39,13 @@ export class PasswordResetToken {
 
   @Index()
   @Property({ type: 'Date', nullable: true })
-  usedAt?: Date;
+  revokedAt?: Date;
 
   @Property({ type: 'string', length: 100, nullable: true })
   ipAddress?: string;
 
-  @Index()
-  @Property({ type: 'string', length: 30 })
-  status!: string;
+  @Property({ type: 'text', nullable: true })
+  userAgent?: string;
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();

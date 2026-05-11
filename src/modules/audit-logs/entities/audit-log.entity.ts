@@ -1,5 +1,3 @@
-// src/modules/audit-logs/entities/audit-log.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -17,50 +15,67 @@ import { User } from '../../users/entities/user.entity';
 
 @Entity({ tableName: 'audit_logs' })
 export class AuditLog {
-  [OptionalProps]?: 'id' | 'createdAt';
+  [OptionalProps]?:
+    | 'id'
+    | 'school'
+    | 'branch'
+    | 'user'
+    | 'entityId'
+    | 'oldValues'
+    | 'newValues'
+    | 'ipAddress'
+    | 'userAgent'
+    | 'createdAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
 
   @Index()
-  @ManyToOne(() => School, { fieldName: 'school_id' })
-  school!: Rel<School>;
+  @ManyToOne(() => School, {
+    fieldName: 'school_id',
+    nullable: true,
+  })
+  school?: Rel<School>;
 
   @Index()
-  @ManyToOne(() => Branch, { fieldName: 'branch_id' })
-  branch!: Rel<Branch>;
+  @ManyToOne(() => Branch, {
+    fieldName: 'branch_id',
+    nullable: true,
+  })
+  branch?: Rel<Branch>;
 
   @Index()
-  @ManyToOne(() => User, { fieldName: 'user_id' })
-  user!: Rel<User>;
-
-  @Property({ type: 'string', length: 120 })
-  moduleName!: string;
-
-  @Index()
-  @Property({ type: 'string', length: 120 })
-  tableName!: string;
+  @ManyToOne(() => User, {
+    fieldName: 'user_id',
+    nullable: true,
+  })
+  user?: Rel<User>;
 
   @Index()
-  @Property({ type: 'uuid' })
-  recordId!: string;
-
-  @Index()
-  @Property({ type: 'string', length: 80 })
+  @Property({ type: 'string', length: 100 })
   action!: string;
 
-  @Property({ type: 'jsonb', nullable: true })
+  @Index()
+  @Property({ type: 'string', length: 100 })
+  entityName!: string;
+
+  @Index()
+  @Property({ type: 'uuid', nullable: true })
+  entityId?: string;
+
+  @Property({ type: 'json', nullable: true })
   oldValues?: Record<string, unknown>;
 
-  @Property({ type: 'jsonb', nullable: true })
+  @Property({ type: 'json', nullable: true })
   newValues?: Record<string, unknown>;
 
-  @Property({ type: 'string', length: 45, nullable: true })
+  @Property({ type: 'string', length: 100, nullable: true })
   ipAddress?: string;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'text', nullable: true })
   userAgent?: string;
 
+  @Index()
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();
 }

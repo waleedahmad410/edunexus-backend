@@ -1,5 +1,3 @@
-// src/modules/guardians/entities/student-guardian.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,21 +6,24 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
+import { Guardian } from '../../guardians/entities/guardian.entity';
 import { Student } from '../../students/entities/student.entity';
-import { Guardian } from './guardian.entity';
 
 @Entity({ tableName: 'student_guardians' })
+@Unique({ properties: ['student', 'guardian'] })
 export class StudentGuardian {
   [OptionalProps]?:
     | 'id'
-    | 'isPrimaryGuardian'
-    | 'isEmergencyContact'
-    | 'canPickupStudent'
+    | 'isPrimary'
+    | 'canPickup'
+    | 'receivesSms'
     | 'createdAt'
-    | 'updatedAt';
+    | 'updatedAt'
+    | 'deletedAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
@@ -37,16 +38,20 @@ export class StudentGuardian {
 
   @Index()
   @Property({ type: 'string', length: 50 })
-  relationType!: string;
+  relationship!: string;
 
-  @Property({ type: 'boolean', default: false })
-  isPrimaryGuardian = false;
+  @Property({ type: 'boolean' })
+  isPrimary = false;
 
-  @Property({ type: 'boolean', default: false })
-  isEmergencyContact = false;
+  @Property({ type: 'boolean' })
+  canPickup = false;
 
-  @Property({ type: 'boolean', default: false })
-  canPickupStudent = false;
+  @Property({ type: 'boolean' })
+  receivesSms = true;
+
+  @Index()
+  @Property({ type: 'string', length: 30 })
+  status!: string;
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();
@@ -57,4 +62,7 @@ export class StudentGuardian {
     onUpdate: () => new Date(),
   })
   updatedAt = new Date();
+
+  @Property({ type: 'Date', nullable: true })
+  deletedAt?: Date;
 }

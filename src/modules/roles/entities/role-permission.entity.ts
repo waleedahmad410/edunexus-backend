@@ -1,5 +1,3 @@
-// src/modules/roles/entities/role-permission.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,15 +6,17 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
-import { Permission } from './permission.entity';
+import { Permission } from '../entities/permission.entity';
 import { Role } from './role.entity';
 
 @Entity({ tableName: 'role_permissions' })
+@Unique({ properties: ['role', 'permission'] })
 export class RolePermission {
-  [OptionalProps]?: 'id' | 'createdAt';
+  [OptionalProps]?: 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
@@ -31,4 +31,14 @@ export class RolePermission {
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();
+
+  @Property({
+    type: 'Date',
+    onCreate: () => new Date(),
+    onUpdate: () => new Date(),
+  })
+  updatedAt = new Date();
+
+  @Property({ type: 'Date', nullable: true })
+  deletedAt?: Date;
 }

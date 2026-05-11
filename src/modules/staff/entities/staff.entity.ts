@@ -1,5 +1,3 @@
-// src/modules/staff/entities/staff.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,6 +6,7 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
@@ -16,8 +15,19 @@ import { School } from '../../schools/entities/school.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity({ tableName: 'staff' })
+@Unique({ properties: ['user'] })
+@Unique({ properties: ['school', 'branch', 'employeeNumber'] })
 export class Staff {
-  [OptionalProps]?: 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';
+  [OptionalProps]?:
+    | 'id'
+    | 'middleName'
+    | 'dateOfBirth'
+    | 'email'
+    | 'address'
+    | 'photoUrl'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
@@ -38,32 +48,23 @@ export class Staff {
   @Property({ type: 'string', length: 50 })
   employeeNumber!: string;
 
-  @Property({ type: 'string', length: 100, nullable: true })
-  department?: string;
+  @Property({ type: 'string', length: 100 })
+  firstName!: string;
 
   @Property({ type: 'string', length: 100, nullable: true })
-  designation?: string;
+  middleName?: string;
 
-  @Property({ type: 'string', length: 50 })
-  employmentType!: string;
-
-  @Property({ type: 'Date' })
-  joiningDate!: Date;
+  @Property({ type: 'string', length: 100 })
+  lastName!: string;
 
   @Index()
-  @Property({ type: 'string', length: 30 })
-  status!: string;
-
-  @Property({ type: 'Date', onCreate: () => new Date() })
-  createdAt = new Date();
-
-  @Property({
-    type: 'Date',
-    onCreate: () => new Date(),
-    onUpdate: () => new Date(),
-  })
-  updatedAt = new Date();
+  @Property({ type: 'string', length: 20 })
+  gender!: string;
 
   @Property({ type: 'Date', nullable: true })
-  deletedAt?: Date;
+  dateOfBirth?: Date;
+
+  @Index()
+  @Property({ type: 'string', length: 20 })
+  phone!: string;
 }

@@ -1,5 +1,3 @@
-// src/modules/students/entities/student.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,6 +6,7 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
@@ -16,8 +15,19 @@ import { School } from '../../schools/entities/school.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity({ tableName: 'students' })
+@Unique({ properties: ['user'] })
+@Unique({ properties: ['school', 'branch', 'admissionNumber'] })
 export class Student {
-  [OptionalProps]?: 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';
+  [OptionalProps]?:
+    | 'id'
+    | 'middleName'
+    | 'photoUrl'
+    | 'bloodGroup'
+    | 'medicalNotes'
+    | 'address'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = uuid();
@@ -38,11 +48,33 @@ export class Student {
   @Property({ type: 'string', length: 50 })
   admissionNumber!: string;
 
+  @Property({ type: 'string', length: 100 })
+  firstName!: string;
+
+  @Property({ type: 'string', length: 100, nullable: true })
+  middleName?: string;
+
+  @Property({ type: 'string', length: 100 })
+  lastName!: string;
+
+  @Index()
+  @Property({ type: 'string', length: 20 })
+  gender!: string;
+
+  @Property({ type: 'Date' })
+  dateOfBirth!: Date;
+
+  @Property({ type: 'string', length: 500, nullable: true })
+  photoUrl?: string;
+
   @Property({ type: 'string', length: 10, nullable: true })
   bloodGroup?: string;
 
   @Property({ type: 'text', nullable: true })
   medicalNotes?: string;
+
+  @Property({ type: 'text', nullable: true })
+  address?: string;
 
   @Property({ type: 'Date' })
   admissionDate!: Date;
@@ -50,17 +82,4 @@ export class Student {
   @Index()
   @Property({ type: 'string', length: 30 })
   status!: string;
-
-  @Property({ type: 'Date', onCreate: () => new Date() })
-  createdAt = new Date();
-
-  @Property({
-    type: 'Date',
-    onCreate: () => new Date(),
-    onUpdate: () => new Date(),
-  })
-  updatedAt = new Date();
-
-  @Property({ type: 'Date', nullable: true })
-  deletedAt?: Date;
 }

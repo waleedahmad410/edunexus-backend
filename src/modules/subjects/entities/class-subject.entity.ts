@@ -13,7 +13,7 @@ import { v4 as uuid } from 'uuid';
 
 import { AcademicYear } from '../../academic-years/entities/academic-year.entity';
 import { Branch } from '../../branches/entities/branch.entity';
-import { SchoolClass } from '../../classes/entities/school-class.entity';
+import { SchoolClass } from '../../classes/entities/class.entity';
 import { School } from '../../schools/entities/school.entity';
 import { Subject } from './subject.entity';
 

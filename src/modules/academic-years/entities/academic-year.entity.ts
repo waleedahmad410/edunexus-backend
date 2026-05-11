@@ -1,5 +1,3 @@
-// src/modules/academic-years/entities/academic-year.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,17 +6,19 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
+import { Branch } from '../../branches/entities/branch.entity';
 import { School } from '../../schools/entities/school.entity';
 
 @Entity({ tableName: 'academic_years' })
+@Unique({ properties: ['school', 'branch', 'name'] })
 export class AcademicYear {
   [OptionalProps]?:
     | 'id'
-    | 'isActive'
-    | 'isLocked'
+    | 'isCurrent'
     | 'createdAt'
     | 'updatedAt'
     | 'deletedAt';
@@ -30,7 +30,12 @@ export class AcademicYear {
   @ManyToOne(() => School, { fieldName: 'school_id' })
   school!: Rel<School>;
 
-  @Property({ type: 'string', length: 120 })
+  @Index()
+  @ManyToOne(() => Branch, { fieldName: 'branch_id' })
+  branch!: Rel<Branch>;
+
+  @Index()
+  @Property({ type: 'string', length: 50 })
   name!: string;
 
   @Property({ type: 'Date' })
@@ -39,11 +44,13 @@ export class AcademicYear {
   @Property({ type: 'Date' })
   endDate!: Date;
 
-  @Property({ type: 'boolean', default: true })
-  isActive = true;
+  @Index()
+  @Property({ type: 'boolean' })
+  isCurrent = false;
 
-  @Property({ type: 'boolean', default: false })
-  isLocked = false;
+  @Index()
+  @Property({ type: 'string', length: 30 })
+  status!: string;
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();

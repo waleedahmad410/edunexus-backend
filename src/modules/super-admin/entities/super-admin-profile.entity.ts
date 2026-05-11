@@ -10,18 +10,16 @@ import {
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
-import { Branch } from '../../branches/entities/branch.entity';
-import { School } from '../../schools/entities/school.entity';
+import { User } from '../../users/entities/user.entity';
 
-@Entity({ tableName: 'roles' })
-@Unique({ properties: ['school', 'branch', 'code'] })
-export class Role {
+@Entity({ tableName: 'super_admin_profiles' })
+@Unique({ properties: ['user'] })
+export class SuperAdminProfile {
   [OptionalProps]?:
     | 'id'
-    | 'school'
-    | 'branch'
-    | 'description'
-    | 'isSystemRole'
+    | 'middleName'
+    | 'phone'
+    | 'photoUrl'
     | 'createdAt'
     | 'updatedAt'
     | 'deletedAt';
@@ -30,32 +28,27 @@ export class Role {
   id: string = uuid();
 
   @Index()
-  @ManyToOne(() => School, {
-    fieldName: 'school_id',
-    nullable: true,
-  })
-  school?: Rel<School>;
+  @ManyToOne(() => User, { fieldName: 'user_id' })
+  user!: Rel<User>;
 
-  @Index()
-  @ManyToOne(() => Branch, {
-    fieldName: 'branch_id',
-    nullable: true,
-  })
-  branch?: Rel<Branch>;
-
-  @Index()
   @Property({ type: 'string', length: 100 })
-  name!: string;
+  firstName!: string;
+
+  @Property({ type: 'string', length: 100, nullable: true })
+  middleName?: string;
+
+  @Property({ type: 'string', length: 100 })
+  lastName!: string;
+
+  @Property({ type: 'string', length: 20, nullable: true })
+  phone?: string;
+
+  @Property({ type: 'string', length: 500, nullable: true })
+  photoUrl?: string;
 
   @Index()
-  @Property({ type: 'string', length: 100 })
-  code!: string;
-
-  @Property({ type: 'text', nullable: true })
-  description?: string;
-
-  @Property({ type: 'boolean' })
-  isSystemRole = false;
+  @Property({ type: 'string', length: 50 })
+  accessLevel!: string;
 
   @Index()
   @Property({ type: 'string', length: 30 })

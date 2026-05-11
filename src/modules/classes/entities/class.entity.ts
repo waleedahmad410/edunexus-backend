@@ -1,5 +1,3 @@
-// src/modules/classes/entities/school-class.entity.ts
-
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {
@@ -8,6 +6,7 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
@@ -15,11 +14,11 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { School } from '../../schools/entities/school.entity';
 
 @Entity({ tableName: 'classes' })
+@Unique({ properties: ['school', 'branch', 'code'] })
 export class SchoolClass {
   [OptionalProps]?:
     | 'id'
     | 'sortOrder'
-    | 'isActive'
     | 'createdAt'
     | 'updatedAt'
     | 'deletedAt';
@@ -35,22 +34,20 @@ export class SchoolClass {
   @ManyToOne(() => Branch, { fieldName: 'branch_id' })
   branch!: Rel<Branch>;
 
-  @Property({ type: 'string', length: 120 })
+  @Index()
+  @Property({ type: 'string', length: 100 })
   name!: string;
 
   @Index()
   @Property({ type: 'string', length: 50 })
   code!: string;
 
-  @Index()
-  @Property({ type: 'string', length: 50 })
-  level!: string;
-
-  @Property({ type: 'integer', default: 0 })
+  @Property({ type: 'number' })
   sortOrder = 0;
 
-  @Property({ type: 'boolean', default: true })
-  isActive = true;
+  @Index()
+  @Property({ type: 'string', length: 30 })
+  status!: string;
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();
