@@ -5,7 +5,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { randomUUID } from 'node:crypto';
 
 import { AppModule } from '../../app.module';
-import { PasswordService } from '../../modules/auth/password.service';
+import { PasswordService } from '../../modules/auth/services/password.service';
 
 // Adjust these imports to your real entity paths
 import { User } from '../../modules/users/entities/user.entity';

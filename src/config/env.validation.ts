@@ -1,11 +1,10 @@
-// src/config/env.validation.ts
-
 import { plainToInstance } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
   IsNotEmpty,
   IsString,
+  Matches,
   Max,
   Min,
   validateSync,
@@ -65,10 +64,16 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d+[smhd]$/, {
+    message: 'JWT_ACCESS_EXPIRES_IN must be like 15m, 1h, or 7d.',
+  })
   JWT_ACCESS_EXPIRES_IN!: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d+[smhd]$/, {
+    message: 'JWT_REFRESH_EXPIRES_IN must be like 15m, 1h, or 7d.',
+  })
   JWT_REFRESH_EXPIRES_IN!: string;
 
   @IsString()

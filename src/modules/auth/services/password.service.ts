@@ -1,9 +1,7 @@
-// src/modules/auth/services/password.service.ts
-
 import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
 
-import { ARGON2_OPTIONS } from './constants/password.constants';
+import { ARGON2_OPTIONS } from '../constants/password.constants';
 import { PasswordPolicyService } from './password-policy.service';
 
 @Injectable()
