@@ -1,10 +1,8 @@
 import {
   Body,
   Controller,
-  Headers,
   HttpCode,
   HttpStatus,
-  Ip,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -42,15 +40,8 @@ export class SuperAdminAuthController {
   @ApiOkResponse({ type: SuperAdminLoginResponseDto })
   @ApiUnauthorizedResponse({ description: 'Invalid email or password' })
   @ApiForbiddenResponse({ description: 'Super admin account is not active' })
-  login(
-    @Body() dto: SuperAdminLoginDto,
-    @Ip() ipAddress: string,
-    @Headers('user-agent') userAgent?: string,
-  ): Promise<SuperAdminLoginResponseDto> {
-    return this.authService.login(dto, {
-      ipAddress,
-      userAgent,
-    });
+  login(@Body() dto: SuperAdminLoginDto): Promise<SuperAdminLoginResponseDto> {
+    return this.authService.login(dto);
   }
 
   @Post('refresh')
@@ -60,9 +51,7 @@ export class SuperAdminAuthController {
   @ApiOkResponse({ type: SuperAdminRefreshResponseDto })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token' })
   @ApiForbiddenResponse({ description: 'Super admin account is not active' })
-  refresh(
-    @Body() dto: RefreshTokenDto,
-  ): Promise<SuperAdminRefreshResponseDto> {
+  refresh(@Body() dto: RefreshTokenDto): Promise<SuperAdminRefreshResponseDto> {
     return this.authService.refresh(dto);
   }
 
@@ -91,5 +80,4 @@ export class SuperAdminAuthController {
   ): Promise<SuperAdminMessageResponseDto> {
     return this.authService.logoutAll(admin.userId);
   }
-
 }

@@ -1,34 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class SuperAdminSummaryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  userId!: string;
-
-  @ApiProperty()
-  email!: string;
-
-  @ApiProperty()
-  firstName!: string;
-
-  @ApiProperty()
-  lastName!: string;
-
-  @ApiProperty()
-  accessLevel!: string;
-}
-
 export class SuperAdminLoginResponseDto {
   @ApiProperty()
   accessToken!: string;
 
   @ApiProperty()
   refreshToken!: string;
-
-  @ApiProperty({ type: SuperAdminSummaryDto })
-  superAdmin!: SuperAdminSummaryDto;
 }
 
 export class SuperAdminRefreshResponseDto {

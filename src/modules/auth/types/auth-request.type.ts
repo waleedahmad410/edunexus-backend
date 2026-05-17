@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 import type { SuperAdminProfile } from '../../super-admin/entities/super-admin-profile.entity';
 
 export type CurrentSuperAdmin = {
@@ -8,6 +8,6 @@ export type CurrentSuperAdmin = {
   accessLevel: SuperAdminProfile['accessLevel'];
 };
 
-export type SuperAdminAuthRequest = Request & {
+export type SuperAdminAuthRequest = FastifyRequest & {
   superAdmin?: CurrentSuperAdmin;
 };

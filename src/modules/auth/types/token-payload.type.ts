@@ -4,7 +4,6 @@ export type SuperAdminAccessTokenPayload = {
   sub: string;
   rtid: string;
   role: 'SUPER_ADMIN';
-  accessLevel: SuperAdminProfile['accessLevel'];
   iat?: number;
   exp?: number;
 };

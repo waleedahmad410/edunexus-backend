@@ -43,8 +43,7 @@ export class AuthCryptoService {
   }
 
   hashRefreshSecret(secret: string): string {
-    const refreshSecret =
-      this.config.getOrThrow<string>('JWT_REFRESH_SECRET');
+    const refreshSecret = this.config.getOrThrow<string>('JWT_REFRESH_SECRET');
 
     return createHmac('sha256', refreshSecret).update(secret).digest('hex');
   }

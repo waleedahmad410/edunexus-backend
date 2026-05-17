@@ -16,7 +16,6 @@ import { SuperAdminLoginDto } from './dto/super-admin-login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import {
   SuperAdminLoginResponseDto,
-  SuperAdminMeResponseDto,
   SuperAdminMessageResponseDto,
   SuperAdminRefreshResponseDto,
 } from './dto/super-admin-auth.response.dto';
@@ -24,11 +23,6 @@ import {
 import { AuthCryptoService } from './services/auth-crypto.service';
 import { AuthTokenService } from './services/auth-token.service';
 import { PasswordService } from './services/password.service';
-
-type ClientMeta = {
-  ipAddress?: string;
-  userAgent?: string;
-};
 
 type DurationUnit = 's' | 'm' | 'h' | 'd';
 
@@ -41,20 +35,11 @@ export class SuperAdminAuthService {
     private readonly passwordService: PasswordService,
     private readonly config: ConfigService,
 
-    @InjectRepository(User)
-    private readonly usersRepo: EntityRepository<User>,
-
-    @InjectRepository(SuperAdminProfile)
-    private readonly profilesRepo: EntityRepository<SuperAdminProfile>,
-
     @InjectRepository(RefreshToken)
     private readonly refreshTokensRepo: EntityRepository<RefreshToken>,
   ) {}
 
-  async login(
-    dto: SuperAdminLoginDto,
-    meta: ClientMeta,
-  ): Promise<SuperAdminLoginResponseDto> {
+  async login(dto: SuperAdminLoginDto): Promise<SuperAdminLoginResponseDto> {
     const email = dto.email.trim().toLowerCase();
 
     return this.em.transactional(async (em) => {
@@ -80,28 +65,14 @@ export class SuperAdminAuthService {
         throw new ForbiddenException('User account is not active');
       }
 
-      const profile = await em.findOne(SuperAdminProfile, {
-        user,
-        deletedAt: null,
-      });
-
-      if (!profile) {
-        throw new ForbiddenException('Super admin profile not found');
-      }
-
-      if (profile.status !== 'ACTIVE') {
-        throw new ForbiddenException('Super admin profile is not active');
-      }
-
       const refreshTokenRecord = new RefreshToken();
 
       refreshTokenRecord.user = user;
-      refreshTokenRecord.ipAddress = meta.ipAddress;
-      refreshTokenRecord.userAgent = meta.userAgent;
       refreshTokenRecord.expiresAt = this.getRefreshTokenExpiryDate();
 
-      const { refreshToken, refreshTokenHash } =
-        this.crypto.createRefreshToken(refreshTokenRecord.id);
+      const { refreshToken, refreshTokenHash } = this.crypto.createRefreshToken(
+        refreshTokenRecord.id,
+      );
 
       refreshTokenRecord.tokenHash = refreshTokenHash;
       user.lastLoginAt = new Date();
@@ -113,27 +84,16 @@ export class SuperAdminAuthService {
         sub: user.id,
         rtid: refreshTokenRecord.id,
         role: 'SUPER_ADMIN',
-        accessLevel: profile.accessLevel,
       });
 
       return {
         accessToken,
         refreshToken,
-        superAdmin: {
-          id: profile.id,
-          userId: user.id,
-          email: user.email,
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          accessLevel: profile.accessLevel,
-        },
       };
     });
   }
 
-  async refresh(
-    dto: RefreshTokenDto,
-  ): Promise<SuperAdminRefreshResponseDto> {
+  async refresh(dto: RefreshTokenDto): Promise<SuperAdminRefreshResponseDto> {
     const { refreshTokenId, secret } = this.crypto.parseRefreshToken(
       dto.refreshToken,
     );
@@ -199,7 +159,6 @@ export class SuperAdminAuthService {
         sub: user.id,
         rtid: refreshTokenRecord.id,
         role: 'SUPER_ADMIN',
-        accessLevel: profile.accessLevel,
       });
 
       return {
@@ -241,11 +200,8 @@ export class SuperAdminAuthService {
     };
   }
 
-
   private getRefreshTokenExpiryDate(): Date {
-    const expiresIn = this.config.getOrThrow<string>(
-      'JWT_REFRESH_EXPIRES_IN',
-    );
+    const expiresIn = this.config.getOrThrow<string>('JWT_REFRESH_EXPIRES_IN');
 
     return this.addDuration(new Date(), expiresIn);
   }

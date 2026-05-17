@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { AppController } from './../src/app.controller';
 import { AppService } from './../src/app.service';
 import type { HealthStatus } from './../src/app.service';
 
 describe('Health endpoint (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: NestFastifyApplication;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -15,23 +16,27 @@ describe('Health endpoint (e2e)', () => {
       providers: [AppService],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleFixture.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+    );
     app.setGlobalPrefix('api');
     await app.init();
+    await app.getHttpAdapter().getInstance().ready();
   });
 
-  it('/api/health (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/api/health')
-      .expect(200)
-      .expect((response) => {
-        const body = response.body as HealthStatus;
+  it('/api/health (GET)', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/health',
+    });
 
-        expect(body.status).toBe('ok');
-        expect(body.uptime).toEqual(expect.any(Number));
-        expect(body.timestamp).toEqual(expect.any(String));
-        expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
-      });
+    const body = JSON.parse(response.payload) as HealthStatus;
+
+    expect(response.statusCode).toBe(200);
+    expect(body.status).toBe('ok');
+    expect(body.uptime).toEqual(expect.any(Number));
+    expect(body.timestamp).toEqual(expect.any(String));
+    expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
   });
 
   afterEach(async () => {
