@@ -6,7 +6,6 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
-  Unique,
 } from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
@@ -14,7 +13,6 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { School } from '../../schools/entities/school.entity';
 
 @Entity({ tableName: 'roles' })
-@Unique({ properties: ['school', 'branch', 'code'] })
 export class Role {
   [OptionalProps]?:
     | 'id'
@@ -22,6 +20,9 @@ export class Role {
     | 'branch'
     | 'description'
     | 'isSystemRole'
+    | 'isTemplate'
+    | 'isDefaultRole'
+    | 'status'
     | 'createdAt'
     | 'updatedAt'
     | 'deletedAt';
@@ -34,14 +35,14 @@ export class Role {
     fieldName: 'school_id',
     nullable: true,
   })
-  school?: Rel<School>;
+  school?: Rel<School> | null;
 
   @Index()
   @ManyToOne(() => Branch, {
     fieldName: 'branch_id',
     nullable: true,
   })
-  branch?: Rel<Branch>;
+  branch?: Rel<Branch> | null;
 
   @Index()
   @Property({ type: 'string', length: 100 })
@@ -54,12 +55,18 @@ export class Role {
   @Property({ type: 'text', nullable: true })
   description?: string;
 
-  @Property({ type: 'boolean' })
+  @Property({ type: 'boolean', default: false })
   isSystemRole = false;
 
+  @Property({ type: 'boolean', default: false })
+  isTemplate = false;
+
+  @Property({ type: 'boolean', default: false })
+  isDefaultRole = false;
+
   @Index()
-  @Property({ type: 'string', length: 30 })
-  status!: string;
+  @Property({ type: 'string', length: 30, default: 'ACTIVE' })
+  status = 'ACTIVE';
 
   @Property({ type: 'Date', onCreate: () => new Date() })
   createdAt = new Date();

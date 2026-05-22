@@ -1,5 +1,5 @@
 // src/modules/users/entities/user-profile.entity.ts
-
+//Deprecated ..Not used
 import { OptionalProps } from '@mikro-orm/core';
 import type { Rel } from '@mikro-orm/core';
 import {

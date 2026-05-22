@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 
@@ -7,7 +7,9 @@ import { SuperAdminAccessTokenPayload } from '../types/token-payload.type';
 @Injectable()
 export class AuthTokenService {
   constructor(
+    @Inject(JwtService)
     private readonly jwt: JwtService,
+    @Inject(ConfigService)
     private readonly config: ConfigService,
   ) {}
 

@@ -10,6 +10,7 @@ import { StudentGuardian } from '../modules/guardians/entities/student-guardian.
 import { Permission } from '../modules/roles/entities/permission.entity';
 import { RolePermission } from '../modules/roles/entities/role-permission.entity';
 import { Role } from '../modules/roles/entities/role.entity';
+import { StaffRole } from '../modules/roles/entities/staff-role.entity';
 import { SchoolSetting } from '../modules/schools/entities/school-setting.entity';
 import { School } from '../modules/schools/entities/school.entity';
 import { Section } from '../modules/sections/entities/section.entity';
@@ -36,6 +37,7 @@ export const entities = [
   RefreshToken,
   Role,
   RolePermission,
+  StaffRole,
   SchoolClass,
   Session,
   School,

@@ -20,6 +20,7 @@ import { User } from '../../users/entities/user.entity';
 export class Staff {
   [OptionalProps]?:
     | 'id'
+    | 'branch'
     | 'middleName'
     | 'dateOfBirth'
     | 'email'
@@ -37,8 +38,11 @@ export class Staff {
   school!: Rel<School>;
 
   @Index()
-  @ManyToOne(() => Branch, { fieldName: 'branch_id' })
-  branch!: Rel<Branch>;
+  @ManyToOne(() => Branch, {
+    fieldName: 'branch_id',
+    nullable: true,
+  })
+  branch?: Rel<Branch>;
 
   @Index()
   @ManyToOne(() => User, { fieldName: 'user_id' })

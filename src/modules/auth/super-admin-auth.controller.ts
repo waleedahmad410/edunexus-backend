@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Inject,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -31,7 +32,10 @@ import type { CurrentSuperAdmin as CurrentSuperAdminType } from './types/auth-re
 @ApiTags('Super Admin Auth')
 @Controller('super-admin/auth')
 export class SuperAdminAuthController {
-  constructor(private readonly authService: SuperAdminAuthService) {}
+  constructor(
+    @Inject(SuperAdminAuthService)
+    private readonly authService: SuperAdminAuthService,
+  ) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,7 +17,9 @@ import { SuperAdminAccessTokenPayload } from '../types/token-payload.type';
 @Injectable()
 export class SuperAdminAccessGuard implements CanActivate {
   constructor(
+    @Inject(JwtService)
     private readonly jwt: JwtService,
+    @Inject(EntityManager)
     private readonly em: EntityManager,
   ) {}
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
 
 import { ARGON2_OPTIONS } from '../constants/password.constants';
@@ -6,7 +6,10 @@ import { PasswordPolicyService } from './password-policy.service';
 
 @Injectable()
 export class PasswordService {
-  constructor(private readonly passwordPolicyService: PasswordPolicyService) {}
+  constructor(
+    @Inject(PasswordPolicyService)
+    private readonly passwordPolicyService: PasswordPolicyService,
+  ) {}
 
   async hashPassword(password: string): Promise<string> {
     this.passwordPolicyService.validateOrThrow(password);

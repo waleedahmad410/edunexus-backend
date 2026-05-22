@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -29,10 +30,15 @@ type DurationUnit = 's' | 'm' | 'h' | 'd';
 @Injectable()
 export class SuperAdminAuthService {
   constructor(
+    @Inject(EntityManager)
     private readonly em: EntityManager,
+    @Inject(AuthCryptoService)
     private readonly crypto: AuthCryptoService,
+    @Inject(AuthTokenService)
     private readonly tokens: AuthTokenService,
+    @Inject(PasswordService)
     private readonly passwordService: PasswordService,
+    @Inject(ConfigService)
     private readonly config: ConfigService,
 
     @InjectRepository(RefreshToken)
